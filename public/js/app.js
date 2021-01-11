@@ -89735,28 +89735,27 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var PostsModal = function PostsModal(props) {
   var alert = new _services_Alert__WEBPACK_IMPORTED_MODULE_2__["default"]();
   var api = new _services_Api__WEBPACK_IMPORTED_MODULE_3__["PostsApi"]();
+  /*I don't know why setState is not working if the value set is the same, this is to toggle the rendering*/
 
-  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(props.title),
+  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(0),
       _useState2 = _slicedToArray(_useState, 2),
-      title = _useState2[0],
-      setTitle = _useState2[1];
+      errorCounter = _useState2[0],
+      setErrorCounter = _useState2[1];
 
-  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(props.description),
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new _services_Errors__WEBPACK_IMPORTED_MODULE_5__["default"]()),
       _useState4 = _slicedToArray(_useState3, 2),
-      description = _useState4[0],
-      setDescription = _useState4[1];
+      errors = _useState4[0],
+      setErrors = _useState4[1];
 
   var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(props.title),
       _useState6 = _slicedToArray(_useState5, 2),
-      errorTitle = _useState6[0],
-      seterrorTitle = _useState6[1];
+      title = _useState6[0],
+      setTitle = _useState6[1];
 
   var _useState7 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(props.description),
       _useState8 = _slicedToArray(_useState7, 2),
-      errorDescription = _useState8[0],
-      seterrorDescription = _useState8[1];
-
-  var errors = new _services_Errors__WEBPACK_IMPORTED_MODULE_5__["default"]();
+      description = _useState8[0],
+      setDescription = _useState8[1];
 
   function onSaveEdit() {
     return _onSaveEdit.apply(this, arguments);
@@ -89783,6 +89782,7 @@ var PostsModal = function PostsModal(props) {
                     props.onHide();
                   })["catch"](function (e) {
                     errors.setErrors(e);
+                    setErrorCounter(errorCounter + 1);
                   });
                 }
               });
@@ -89797,7 +89797,6 @@ var PostsModal = function PostsModal(props) {
     return _onSaveEdit.apply(this, arguments);
   }
 
-  console.log(1);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["Modal"], {
     show: props.show,
     onHide: props.onHide
@@ -89844,69 +89843,6 @@ var PostsModal = function PostsModal(props) {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (PostsModal);
-/*
-
-export class PostModal extends Component {
-
-    /!*If this component has been called to another component*!/
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (props.id !== prevProps.id) {
-            setState({
-                title: props.title,
-                description: props.description,
-                id: props.id,
-                show: props.show,
-            })
-            errors.reset()
-        }
-    }
-
-
-
-
-    render() {
-        const errors = errors
-
-        return (
-            <Modal show={show} onHide={e => setState({show: false})}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Modal heading</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-
-                    <Form.Group controlId="validationCustom03" className={'mb-3'}>
-                        <Form.Label>Title</Form.Label>
-                        <Form.Control name={'title'} className={errors.getKey('title') ? 'is-invalid' : ''} onChange={onChange} type="text"
-                                      placeholder="City" value={title}/>
-                        <Form.Control.Feedback type="invalid">
-                            {errors.getKey('title')}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                    <Form.Group controlId="validationCustom03">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control name={'description'}className={errors.getKey('description') ? 'is-invalid' : ''} onChange={onChange} type="textarea"
-                                      placeholder="City" value={description}/>
-                        <Form.Control.Feedback type="invalid">
-                            {errors.getKey('description')}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={e => {
-                        setState({show: false})
-                    }}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={onSaveEdit}>
-                        Save Changes
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        )
-    }
-}
-*/
 
 /***/ }),
 
