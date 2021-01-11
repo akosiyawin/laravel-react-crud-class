@@ -1,66 +1,43 @@
-import React, {Component} from 'react';
+import React, {Component, useState,useEffect} from 'react';
 import Alert from "../../services/Alert";
 import {PostsApi} from "../../services/Api";
 import {Button, Modal, Form} from "react-bootstrap";
 import Errors from "../../services/Errors";
 
-export default class PostModal extends Component {
 
-    constructor(props) {
-        super(props);
-        this.onChange = this.onChange.bind(this)
-        this.onSaveEdit = this.onSaveEdit.bind(this)
-        this.state = {
-            title: '',
-            description: '',
-            id: null,
-            show: this.props.show,
-            errors: new Errors()
-        }
-        this.alert = new Alert();
-        this.api = new PostsApi();
-    }
+const PostsModal = (props) => {
+    const alert = new Alert();
+    const api = new PostsApi();
 
-    onChange(e) {
-        this.setState({[e.target.name]: e.target.value});
-    }
+    const [title, setTitle] = useState(props.title);
+    const [description, setDescription] = useState(props.description);
 
-    /*If this component has been called to another component*/
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.props.id !== prevProps.id) {
-            this.setState({
-                title: this.props.title,
-                description: this.props.description,
-                id: this.props.id,
-                show: this.props.show,
+    const [errorTitle, seterrorTitle] = useState(props.title);
+    const [errorDescription, seterrorDescription] = useState(props.description);
+
+    const errors = new Errors();
+
+    async function onSaveEdit() {
+        await alert.askUpdate()
+            .then(r => {
+                if (r.isConfirmed) {
+                    errors.reset()
+                    api.updatePost(props.id, {title: title, description: description})
+                        .then(r => {
+                            alert.success({message: r.data.message})
+                            props.reloadPost()
+                            props.onHide()
+                        }).catch(e=>{
+                            errors.setErrors(e)
+                    })
+                }
             })
-            this.state.errors.reset()
-        }
     }
 
+    console.log(1)
 
-    onSaveEdit() {
-        this.alert.askUpdate()
-        .then(r => {
-            if (r.isConfirmed) {
-                this.api.updatePost(this.state.id, {title: this.state.title, description: this.state.description})
-                    .then(r => {
-                        this.alert.success({message: r.data.message})
-                        this.props.reloadPost()
-                        this.setState({show: false})
-                    }).catch(e=>{
-                    this.state.errors.setErrors(e)
-                    this.setState({errors: this.state.errors})
-                })
-            }
-        })
-    }
-
-    render() {
-        const errors = this.state.errors
-
-        return (
-            <Modal show={this.state.show} onHide={e => this.setState({show: false})}>
+    return(
+            <Modal show={props.show} onHide={props.onHide}>
                 <Modal.Header closeButton>
                     <Modal.Title>Modal heading</Modal.Title>
                 </Modal.Header>
@@ -68,16 +45,16 @@ export default class PostModal extends Component {
 
                     <Form.Group controlId="validationCustom03" className={'mb-3'}>
                         <Form.Label>Title</Form.Label>
-                        <Form.Control name={'title'} className={errors.getKey('title') ? 'is-invalid' : ''} onChange={this.onChange} type="text"
-                                      placeholder="City" value={this.state.title}/>
+                        <Form.Control name={'title'} className={errors.getKey('title') ? 'is-invalid' : ''} onChange={e => setTitle(e.target.value)} type="text"
+                                      placeholder="City" value={title}/>
                         <Form.Control.Feedback type="invalid">
                             {errors.getKey('title')}
                         </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group controlId="validationCustom03">
                         <Form.Label>Description</Form.Label>
-                        <Form.Control name={'description'}className={errors.getKey('description') ? 'is-invalid' : ''} onChange={this.onChange} type="textarea"
-                                      placeholder="City" value={this.state.description}/>
+                        <Form.Control name={'description'} className={errors.getKey('description') ? 'is-invalid' : ''} onChange={e => setDescription(e.target.value)} type="textarea"
+                                      placeholder="City" value={description}/>
                         <Form.Control.Feedback type="invalid">
                             {errors.getKey('description')}
                         </Form.Control.Feedback>
@@ -86,11 +63,76 @@ export default class PostModal extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={e => {
-                        this.setState({show: false})
+                        props.onHide()
                     }}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={this.onSaveEdit}>
+                    <Button variant="primary" onClick={e=> onSaveEdit()}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+    )
+
+}
+
+export default PostsModal
+
+/*
+
+export class PostModal extends Component {
+
+    /!*If this component has been called to another component*!/
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (props.id !== prevProps.id) {
+            setState({
+                title: props.title,
+                description: props.description,
+                id: props.id,
+                show: props.show,
+            })
+            errors.reset()
+        }
+    }
+
+
+
+
+    render() {
+        const errors = errors
+
+        return (
+            <Modal show={show} onHide={e => setState({show: false})}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Modal heading</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <Form.Group controlId="validationCustom03" className={'mb-3'}>
+                        <Form.Label>Title</Form.Label>
+                        <Form.Control name={'title'} className={errors.getKey('title') ? 'is-invalid' : ''} onChange={onChange} type="text"
+                                      placeholder="City" value={title}/>
+                        <Form.Control.Feedback type="invalid">
+                            {errors.getKey('title')}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group controlId="validationCustom03">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control name={'description'}className={errors.getKey('description') ? 'is-invalid' : ''} onChange={onChange} type="textarea"
+                                      placeholder="City" value={description}/>
+                        <Form.Control.Feedback type="invalid">
+                            {errors.getKey('description')}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={e => {
+                        setState({show: false})
+                    }}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={onSaveEdit}>
                         Save Changes
                     </Button>
                 </Modal.Footer>
@@ -98,3 +140,4 @@ export default class PostModal extends Component {
         )
     }
 }
+*/

@@ -5,32 +5,27 @@ import {
     BrowserRouter,
     Switch,
     Route,
-    Link
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ShowCreatePosts from "./components/Posts/create";
 import ShowPosts from "./components/Posts/show";
 
 
-export default class App extends Component{
-    render() {
-        return (
-            <BrowserRouter className="app__container">
-                <Navbar />
-                <div className="app p-3 container-fluid">
-                    <Switch>
-                        <Route path={"/posts"} exact>
-                            <ShowPosts />
-                        </Route>
-                        <Route path={"/posts/create"}>
-                            <ShowCreatePosts />
-                        </Route>
-                    </Switch>
-                </div>
-            </BrowserRouter>
-        )
-    }
-}
+const App = () =>(
+    <BrowserRouter className="app__container">
+        <Navbar />
+        <div className="app p-3 container-fluid">
+            <Switch>
+                <Route path={"/posts"} exact>
+                    <ShowPosts />
+                </Route>
+                <Route path={"/posts/create"}>
+                    <ShowCreatePosts />
+                </Route>
+            </Switch>
+        </div>
+    </BrowserRouter>
+)
 
 
 if (document.getElementById('root')) {

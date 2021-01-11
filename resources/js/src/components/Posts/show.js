@@ -1,68 +1,80 @@
-import React, {Component} from "react"
+import React, { useEffect, useState} from "react"
 import {PostsApi} from "../../services/Api";
 import Alert from "../../services/Alert";
 import PostModal from "../Modals/PostsModal";
 import {Link} from "react-router-dom";
+import {Button, Form, Modal} from "react-bootstrap";
+import Errors from "../../services/Errors";
 
-export default class ShowPosts extends Component {
+const ShowPosts = () => {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            posts: null,
-            title: '',
-            description: '',
-            id: null,
-            show: false,
-        }
-        this.api = new PostsApi()
-        this.alert = new Alert()
-        this.getAllPosts()
+    const [posts, setPosts] = useState(null);
+    const [show, setShow] = useState(false);
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [id, setId] = useState(null);
 
-        /*Bindings*/
-        this.onDeletePost = this.onDeletePost.bind(this)
-        this.loadPosts = this.loadPosts.bind(this)
-        this.getAllPosts = this.getAllPosts.bind(this)
+    const api = new PostsApi();
+    const alert = new Alert();
+
+    const handleClose = () => setShow(false);
+    const handleOpen = () => setShow(true);
+
+    useEffect(() => {
+        getAllPosts()
+    }, []);
+
+
+    function onDeletePost(id) {
+        alert.askDelete()
+            .then(r => {
+                if (r.isConfirmed) {
+                    try {
+                        api.deletePost(id)
+                            .then(r => {
+                                getAllPosts()
+                                alert.success({title: 'Post Deleted!', message: 'Post successfully deleted!',})
+                            })
+                    } catch (e) {
+                        alert.error('Failed', 'Failed to delete post, Please refresh the page!')
+                    }
+                }
+            })
     }
 
-    async getAllPosts() {
+    async function getAllPosts() {
         try {
-            await this.api.getAllPosts()
+            await api.getAllPosts()
                 .then(r => {
-                    this.setState({posts: r.data.data})
+                    setPosts(r.data.data)
                 })
         } catch (e) {
             this.alert.error('Failed', 'Failed to get posts, Please refresh the page!')
         }
     }
 
-    onDeletePost(id) {
-        this.alert.askDelete()
-        .then(r => {
-            if (r.isConfirmed) {
-                try {
-                    this.api.deletePost(id)
-                    .then(r => {
-                        this.getAllPosts()
-                        this.alert.success({title: 'Post Deleted!', message: 'Post successfully deleted!',})
-                    })
-                } catch (e) {
-                    this.alert.error('Failed', 'Failed to delete post, Please refresh the page!')
-                }
-            }
-        })
+    function ShowModal(){
+        return (
+            <PostModal reloadPost={getAllPosts}
+                       show={show}
+                       title={title}
+                       description={description}
+                       onHide={handleClose}
+                       onOpen={handleOpen}
+                       id={id} />
+        )
     }
 
-
-    loadPosts() {
-        if (!this.state.posts) {
+    function loadPosts(){
+        if (!posts) {
             return (
                 <tr>
                     <td>Loading Posts</td>
                 </tr>
             )
         }
-        if (this.state.posts.length === 0) {
+
+        if (posts.length === 0) {
             return (
                 <tr>
                     <td>There are no posts yet, add one!</td>
@@ -70,7 +82,8 @@ export default class ShowPosts extends Component {
             )
         }
 
-        return this.state.posts.map(post => (
+        /*Will render all the posts*/
+        return posts.map(post => (
             <tr key={post.id}>
                 <th scope={'row'}>{post.id}</th>
                 <td>{post.title}</td>
@@ -78,15 +91,16 @@ export default class ShowPosts extends Component {
                 <td className={'d-flex'}>
                     <button type="button"
                             className="btn btn-primary mr-2"
-                            data-toggle="modal"
-                            data-target="#postEditModal"
                             onClick={ event => {
-                                this.setState({title:post.title,description:post.description,id:post.id,show:true})
+                                setTitle(post.title)
+                                setDescription(post.description)
+                                setId(post.id)
+                                handleOpen()
                             }}>
                         Edit
                     </button>
                     <button className={'btn btn-danger'} onClick={e => {
-                        this.onDeletePost(post.id)
+                        onDeletePost(post.id)
                     }}>Delete
                     </button>
                 </td>
@@ -94,31 +108,26 @@ export default class ShowPosts extends Component {
         ))
     }
 
-    render() {
-        return (
-            <div className={'container p-4'}>
-                <Link className={'btn btn-primary btn-block mb-2'} to={'/posts/create'}>Create Post</Link>
-                <table className="table">
-                    <thead className="thead-dark">
-                    <tr>
-                        <th scope="col">Post ID</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        {this.loadPosts()}
-                    </tbody>
-                </table>
+    return (
+        <div className={'container p-4'}>
+            <Link className={'btn btn-primary btn-block mb-2'} to={'/posts/create'}>Create Post</Link>
+            <table className="table">
+                <thead className="thead-dark">
+                <tr>
+                    <th scope="col">Post ID</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {loadPosts()}
+                </tbody>
+            </table>
 
-                <PostModal reloadPost={this.getAllPosts}
-                           show={this.state.show}
-                           title={this.state.title}
-                           description={this.state.description}
-                           id={this.state.id} />
-            </div>
-        );
-    }
-
+            { show ? ShowModal() : null}
+        </div>
+    )
 }
+
+export default ShowPosts
